@@ -1,52 +1,706 @@
-from flask import Flask, render_template, request, jsonify
-import pickle
-import numpy as np
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>PANGANET - Prediksi Ketahanan Pangan</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta
+      content="ketahanan pangan, artificial intelligence, food security, Indonesia"
+      name="keywords"
+    />
+    <meta
+      content="PANGANET: Sistem Prediksi Ketahanan Pangan berbasis AI"
+      name="description"
+    />
 
-app = Flask(__name__)
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-# ====== LOAD MODEL DAN SCALER ======
-try:
-    model = pickle.load(open("best_model_XGB.pkl", "rb"))
-    scaler = pickle.load(open("scaler.pkl", "rb"))
-except FileNotFoundError:
-    class MockModel:
-        def predict(self, X):
-            return [np.mean(X) * 0.8 + 20]
-    class MockScaler:
-        def transform(self, X):
-            return X
-    model = MockModel()
-    scaler = MockScaler()
+    <!-- Icon Font Stylesheet -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
 
-# ====== ROUTE HALAMAN ======
-@app.route('/')
-def index():
-    return render_template("index.html")
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
 
-@app.route('/prediksi')
-def prediksi_page():
-    return render_template("prediksi.html")
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-# ====== ROUTE PREDIKSI ======
-@app.route('/predict', methods=['POST'])
-def predict():
-    try:
-        json_data = request.get_json()
-        data = [
-            json_data['fitur1'], json_data['fitur2'], json_data['fitur3'],
-            json_data['fitur4'], json_data['fitur5'], json_data['fitur6'],
-            json_data['fitur7'], json_data['fitur8'], json_data['fitur9']
-        ]
-        features = np.array(data).reshape(1, -1)
-        features_scaled = scaler.transform(features)
-        prediction = model.predict(features_scaled)
-        output = float(prediction[0])
-        return jsonify({"prediction": round(output, 2)})
-    except Exception as e:
-        return jsonify({"error": str(e)})
+      body {
+        font-family: 'Nunito', sans-serif;
+        overflow-x: hidden;
+      }
 
-if __name__ == '__main__':
-    import os
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+      /* Spinner */
+      #spinner {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+      }
 
+      #spinner.hide {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .spinner-border {
+        width: 3rem;
+        height: 3rem;
+      }
+
+      /* Navbar */
+      .navbar {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .navbar-brand h2 {
+        margin: 0;
+        color: #06BBCC;
+      }
+
+      .navbar-brand i {
+        color: #06BBCC;
+      }
+
+      .nav-link {
+        font-weight: 500;
+        color: #666;
+        transition: color 0.3s;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        color: #06BBCC !important;
+      }
+
+      /* Header */
+      .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 5rem 0;
+      }
+
+      .breadcrumb {
+        background: transparent;
+      }
+
+      .breadcrumb-item a {
+        color: white;
+        text-decoration: none;
+      }
+
+      /* Prediction Form */
+      .prediction-form {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      }
+
+      @media (max-width: 768px) {
+        .prediction-form {
+          padding: 1.5rem;
+          margin: 0 15px;
+        }
+      }
+
+      .form-control {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        font-size: 16px;
+      }
+
+      .form-control:focus {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+      }
+
+      .btn-predict {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 40px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        color: white;
+      }
+
+      .btn-predict:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      @media (max-width: 768px) {
+        .btn-predict {
+          width: 100%;
+          padding: 12px 30px;
+        }
+      }
+
+      /* Result Card - Simplified */
+      .result-card {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        color: white;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.5s ease;
+        display: none;
+        text-align: center;
+      }
+
+      @media (max-width: 768px) {
+        .result-card {
+          padding: 2rem 1.5rem;
+          margin: 0 15px;
+        }
+      }
+
+      .result-card.show {
+        opacity: 1;
+        transform: translateY(0);
+        display: block;
+      }
+
+      .ikp-display {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        display: inline-block;
+        min-width: 250px;
+      }
+
+      .ikp-value {
+        font-size: 4rem;
+        font-weight: 800;
+        margin: 1rem 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      }
+
+      @media (max-width: 576px) {
+        .ikp-value {
+          font-size: 3rem;
+        }
+      }
+
+      .loading-spinner {
+        display: none;
+      }
+
+      .loading-spinner.show {
+        display: inline-block;
+      }
+
+      /* Footer */
+      .footer {
+        background: #0a1930;
+        padding-top: 3rem;
+      }
+
+      .footer h4 {
+        color: white;
+        margin-bottom: 1.5rem;
+      }
+
+      .footer p {
+        color: rgba(255,255,255,0.7);
+      }
+
+      .footer iframe {
+        width: 100%;
+        height: 200px;
+        border-radius: 10px;
+      }
+
+      /* Back to top */
+      .back-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        display: none;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: #06BBCC;
+        color: white;
+        text-align: center;
+        line-height: 45px;
+        z-index: 999;
+        transition: all 0.3s;
+      }
+
+      .back-to-top:hover {
+        background: #055160;
+        color: white;
+      }
+
+      /* Utilities */
+      .text-primary {
+        color: #06BBCC !important;
+      }
+
+      .bg-primary {
+        background-color: #06BBCC !important;
+      }
+
+      .btn-primary {
+        background-color: #06BBCC;
+        border-color: #06BBCC;
+      }
+
+      .btn-primary:hover {
+        background-color: #055160;
+        border-color: #055160;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Spinner Start -->
+    <div
+      id="spinner"
+      class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center"
+      style="z-index: 9999;"
+    >
+      <div
+        class="spinner-border text-primary"
+        role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <!-- Spinner End -->
+
+    <!-- Navbar Start -->
+    <nav
+      class="navbar navbar-expand-lg bg-white navbar-light shadow sticky-top p-0"
+    >
+      <a
+        href="index.html"
+        class="navbar-brand d-flex align-items-center px-4 px-lg-5"
+      >
+        <h2 class="m-0 text-primary">
+          <i class="fa fa-seedling me-3"></i>PANGANET
+        </h2>
+      </a>
+      <button
+        type="button"
+        class="navbar-toggler me-4"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarCollapse"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <div class="navbar-nav ms-auto p-4 p-lg-0">
+          <a href="/" class="nav-item nav-link">Beranda</a>
+          <a href="/#about" class="nav-item nav-link">Tentang</a>
+          <a href="/#analysis" class="nav-item nav-link">Analisis</a>
+          <a href="#" class="nav-item nav-link active">Prediksi</a>
+        </div>
+      </div>
+    </nav>
+    <!-- Navbar End -->
+
+    <!-- Header Start -->
+    <div class="container-fluid bg-primary py-5 mb-5 page-header">
+      <div class="container py-5">
+        <div class="row justify-content-center">
+          <div class="col-lg-10 text-center">
+            <h1 class="display-3 text-white animated slideInDown">
+              Prediksi Ketahanan Pangan
+            </h1>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb justify-content-center">
+                <li class="breadcrumb-item">
+                  <a class="text-white" href="index.html">Beranda</a>
+                </li>
+                <li
+                  class="breadcrumb-item text-white active"
+                  aria-current="page"
+                >
+                  Prediksi
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Header End -->
+
+    <!-- Prediction Form Start -->
+    <div class="container-xxl py-5">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h6 class="section-title bg-white text-center text-primary px-3">
+            AI Prediction
+          </h6>
+          <h1 class="mb-4">Masukkan Data Wilayah</h1>
+          <p class="mb-0">
+            Sistem akan menganalisis 9 indikator utama untuk memprediksi tingkat
+            ketahanan pangan wilayah
+          </p>
+        </div>
+
+        <div class="row g-5 justify-content-center">
+          <div class="col-lg-8">
+            <div class="prediction-form">
+              <form id="predictionForm">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        id="fitur1"
+                        name="fitur1"
+                        placeholder="Fitur 1"
+                        required
+                      />
+                      <label for="fitur1">NCPR</label>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        id="fitur2"
+                        name="fitur2"
+                        placeholder="Fitur 2"
+                        required
+                      />
+                      <label for="fitur2">Kemiskinan %</label>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        id="fitur3"
+                        name="fitur3"
+                        placeholder="Fitur 3"
+                        required
+                      />
+                      <label for="fitur3">Tanpa Pangan %</label>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        id="fitur4"
+                        name="fitur4"
+                        placeholder="Fitur 4"
+                        required
+                      />
+                      <label for="fitur4">Tanpa Listrik %</label>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        id="fitur5"
+                        name="fitur5"
+                        placeholder="Fitur 5"
+                        required
+                      />
+                      <label for="fitur5">Tanpa Air Bersih %</label>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        id="fitur6"
+                        name="fitur6"
+                        placeholder="Fitur 6"
+                        required
+                      />
+                      <label for="fitur6">Lama Sekolah Wanita (Tahun)</label>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        id="fitur7"
+                        name="fitur7"
+                        placeholder="Fitur 7"
+                        required
+                      />
+                      <label for="fitur7">Rasio Tenaga Kesehatan</label>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        id="fitur8"
+                        name="fitur8"
+                        placeholder="Fitur 8"
+                        required
+                      />
+                      <label for="fitur8">Angka Harapan Hidup</label>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        id="fitur9"
+                        name="fitur9"
+                        placeholder="Fitur 9"
+                        required
+                      />
+                      <label for="fitur9">Stunting %</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-center mt-4">
+                  <button type="submit" class="btn btn-primary btn-predict">
+                    <span
+                      class="loading-spinner spinner-border spinner-border-sm me-2"
+                      role="status"
+                    ></span>
+                    <i class="fa fa-calculator me-2"></i>Prediksi Ketahanan
+                    Pangan
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result Section - Simplified -->
+        <div id="resultSection" class="row g-5 justify-content-center mt-5">
+          <div class="col-lg-6">
+            <div id="resultCard" class="result-card">
+              <i class="fa fa-chart-line fa-3x mb-4"></i>
+              <h3 class="mb-4">Hasil Prediksi</h3>
+              <div class="ikp-display">
+                <h5 class="mb-2">Indeks Ketahanan Pangan</h5>
+                <div id="ikpResult" class="ikp-value">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Prediction Form End -->
+
+    <!-- Footer Start -->
+    <div
+      class="container-fluid bg-dark text-light footer pt-5 mt-5"
+    >
+      <div class="container py-5">
+        <div class="row g-5">
+          <div class="col-lg-4 col-md-6">
+            <h4 class="text-white mb-3">PANGANET</h4>
+            <p class="mb-4">
+              Sistem Analisis berbasis Artificial Intelligence untuk Mewujudkan
+              Ketahanan Pangan Nasional yang Inklusif
+            </p>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <h4 class="text-white mb-3">Kontak</h4>
+            <p class="mb-2">
+              <i class="fa fa-university me-3"></i>Universitas Dian Nuswantoro
+            </p>
+            <p class="mb-2">
+              <i class="fa fa-map-marker-alt me-3"></i>Jl. Nakula I No.5-11,
+              Pendrikan Kidul, Kec. Semarang Tengah, Kota Semarang, Jawa Tengah
+              50131
+            </p>
+            <p class="mb-2">
+              <i class="fa fa-phone-alt me-3"></i>+62 812-1626-2867
+            </p>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <h4 class="text-white mb-3">Lokasi Kampus</h4>
+            <div class="map-container">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d9745.349058894997!2d110.41192650975756!3d-6.98772583447143!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e708b4ec52229d7%3A0xc791d6abc9236c7!2sUniversitas%20Dian%20Nuswantoro!5e0!3m2!1sid!2sid!4v1757682063833!5m2!1sid!2sid"
+                style="border: 0"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Footer End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"
+      ><i class="bi bi-arrow-up"></i
+    ></a>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // Hide spinner after page load
+      window.addEventListener("load", function () {
+        setTimeout(function () {
+          var spinner = document.getElementById("spinner");
+          if (spinner) {
+            spinner.classList.remove("show");
+            spinner.classList.add("hide");
+          }
+        }, 500);
+      });
+
+      // Prediction form handler
+      document
+        .getElementById("predictionForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          // Show loading spinner
+          const spinner = document.querySelector(".loading-spinner");
+          const button = document.querySelector(".btn-predict");
+          spinner.classList.add("show");
+          button.disabled = true;
+
+          // Collect input data
+          const data = {
+            fitur1: parseFloat(document.getElementById("fitur1").value),
+            fitur2: parseFloat(document.getElementById("fitur2").value),
+            fitur3: parseFloat(document.getElementById("fitur3").value),
+            fitur4: parseFloat(document.getElementById("fitur4").value),
+            fitur5: parseFloat(document.getElementById("fitur5").value),
+            fitur6: parseFloat(document.getElementById("fitur6").value),
+            fitur7: parseFloat(document.getElementById("fitur7").value),
+            fitur8: parseFloat(document.getElementById("fitur8").value),
+            fitur9: parseFloat(document.getElementById("fitur9").value),
+          };
+
+          try {
+            const response = await fetch("/predict", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (result.prediction !== undefined) {
+              const ikp = result.prediction;
+
+              // Update result display - only IKP value
+              document.getElementById("ikpResult").textContent = ikp.toFixed(2);
+
+              // Show result card with animation
+              const resultCard = document.getElementById("resultCard");
+              resultCard.classList.add("show");
+
+              // Scroll to result
+              resultCard.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+            } else {
+              alert(
+                "Error: " + (result.error || "Terjadi kesalahan dalam prediksi")
+              );
+            }
+          } catch (err) {
+            alert("Terjadi kesalahan koneksi: " + err.message);
+          } finally {
+            // Hide loading spinner
+            spinner.classList.remove("show");
+            button.disabled = false;
+          }
+        });
+
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }
+        });
+      });
+
+      // Back to top functionality
+      window.addEventListener("scroll", function () {
+        const backToTop = document.querySelector(".back-to-top");
+        if (window.pageYOffset > 300) {
+          backToTop.style.display = "block";
+        } else {
+          backToTop.style.display = "none";
+        }
+      });
+
+      document
+        .querySelector(".back-to-top")
+        .addEventListener("click", function (e) {
+          e.preventDefault();
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+          });
+        });
+    </script>
+  </body>
+</html>
