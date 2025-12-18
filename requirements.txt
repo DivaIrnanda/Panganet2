@@ -4,3 +4,4 @@ scikit-learn
 xgboost
 pandas
 gunicorn
+python-3.11
