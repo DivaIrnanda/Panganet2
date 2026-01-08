@@ -493,6 +493,16 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
     <script>
+      // Hide spinner after page load
+      document.addEventListener("DOMContentLoaded", function () {
+        const spinner = document.getElementById("spinner");
+        if (spinner) {
+          setTimeout(() => {
+            spinner.classList.remove("show");
+          }, 1000);
+        }
+      });
+
       // Prediction form handler
       document
         .getElementById("predictionForm")
