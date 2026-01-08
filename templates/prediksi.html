@@ -13,6 +13,9 @@
       name="description"
     />
 
+    <!-- Favicon -->
+    <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" />
+
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -31,79 +34,33 @@
       rel="stylesheet"
     />
 
-    <!-- Bootstrap CSS -->
+    <!-- Libraries Stylesheet -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css"
+      href="{{ url_for('static', filename='lib/animate/animate.min.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}"
       rel="stylesheet"
     />
 
+    <!-- Customized Bootstrap Stylesheet -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+    />
+
+    <!-- Template Stylesheet -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: 'Nunito', sans-serif;
-        overflow-x: hidden;
-      }
-
-      /* Spinner */
-      #spinner {
-        opacity: 1;
-        visibility: visible;
-        transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
-      }
-
-      #spinner.hide {
-        opacity: 0;
-        visibility: hidden;
-      }
-
-      .spinner-border {
-        width: 3rem;
-        height: 3rem;
-      }
-
-      /* Navbar */
-      .navbar {
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-
-      .navbar-brand h2 {
-        margin: 0;
-        color: #06BBCC;
-      }
-
-      .navbar-brand i {
-        color: #06BBCC;
-      }
-
-      .nav-link {
-        font-weight: 500;
-        color: #666;
-        transition: color 0.3s;
-      }
-
-      .nav-link:hover,
-      .nav-link.active {
-        color: #06BBCC !important;
-      }
-
-      /* Header */
-      .page-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 5rem 0;
-      }
-
-      .breadcrumb {
-        background: transparent;
-      }
-
-      .breadcrumb-item a {
-        color: white;
-        text-decoration: none;
+      /* Custom styles for better navbar active states */
+      .navbar-nav .nav-link.active {
+        color: #06bbcc !important;
+        font-weight: 600;
       }
 
       /* Prediction Form */
@@ -215,66 +172,10 @@
         display: inline-block;
       }
 
-      /* Footer */
-      .footer {
-        background: #0a1930;
-        padding-top: 3rem;
-      }
-
-      .footer h4 {
-        color: white;
-        margin-bottom: 1.5rem;
-      }
-
-      .footer p {
-        color: rgba(255,255,255,0.7);
-      }
-
-      .footer iframe {
+      .map-container iframe {
         width: 100%;
         height: 200px;
-        border-radius: 10px;
-      }
-
-      /* Back to top */
-      .back-to-top {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        display: none;
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        background: #06BBCC;
-        color: white;
-        text-align: center;
-        line-height: 45px;
-        z-index: 999;
-        transition: all 0.3s;
-      }
-
-      .back-to-top:hover {
-        background: #055160;
-        color: white;
-      }
-
-      /* Utilities */
-      .text-primary {
-        color: #06BBCC !important;
-      }
-
-      .bg-primary {
-        background-color: #06BBCC !important;
-      }
-
-      .btn-primary {
-        background-color: #06BBCC;
-        border-color: #06BBCC;
-      }
-
-      .btn-primary:hover {
-        background-color: #055160;
-        border-color: #055160;
+        border-radius: 8px;
       }
     </style>
   </head>
@@ -284,13 +185,13 @@
     <div
       id="spinner"
       class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center"
-      style="z-index: 9999;"
     >
       <div
         class="spinner-border text-primary"
+        style="width: 3rem; height: 3rem"
         role="status"
       >
-        <span class="visually-hidden">Loading...</span>
+        <span class="sr-only">Loading...</span>
       </div>
     </div>
     <!-- Spinner End -->
@@ -300,7 +201,7 @@
       class="navbar navbar-expand-lg bg-white navbar-light shadow sticky-top p-0"
     >
       <a
-        href="index.html"
+        href="/"
         class="navbar-brand d-flex align-items-center px-4 px-lg-5"
       >
         <h2 class="m-0 text-primary">
@@ -320,7 +221,7 @@
           <a href="/" class="nav-item nav-link">Beranda</a>
           <a href="/#about" class="nav-item nav-link">Tentang</a>
           <a href="/#analysis" class="nav-item nav-link">Analisis</a>
-          <a href="#" class="nav-item nav-link active">Prediksi</a>
+          <a href="/prediksi" class="nav-item nav-link active">Prediksi</a>
         </div>
       </div>
     </nav>
@@ -334,7 +235,6 @@
             <h1 class="display-3 text-white animated slideInDown">
               Prediksi Ketahanan Pangan
             </h1>
-            
           </div>
         </div>
       </div>
@@ -530,7 +430,8 @@
 
     <!-- Footer Start -->
     <div
-      class="container-fluid bg-dark text-light footer pt-5 mt-5"
+      class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn"
+      data-wow-delay="0.1s"
     >
       <div class="container py-5">
         <div class="row g-5">
@@ -555,11 +456,14 @@
               <i class="fa fa-phone-alt me-3"></i>+62 812-1626-2867
             </p>
           </div>
+
           <div class="col-lg-4 col-md-6">
             <h4 class="text-white mb-3">Lokasi Kampus</h4>
             <div class="map-container">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d9745.349058894997!2d110.41192650975756!3d-6.98772583447143!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e708b4ec52229d7%3A0xc791d6abc9236c7!2sUniversitas%20Dian%20Nuswantoro!5e0!3m2!1sid!2sid!4v1757682063833!5m2!1sid!2sid"
+                width="600"
+                height="450"
                 style="border: 0"
                 allowfullscreen=""
                 loading="lazy"
@@ -580,19 +484,15 @@
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='lib/wow/wow.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
+
+    <!-- Template Javascript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
     <script>
-      // Hide spinner after page load
-      window.addEventListener("load", function () {
-        setTimeout(function () {
-          var spinner = document.getElementById("spinner");
-          if (spinner) {
-            spinner.classList.remove("show");
-            spinner.classList.add("hide");
-          }
-        }, 500);
-      });
-
       // Prediction form handler
       document
         .getElementById("predictionForm")
@@ -654,40 +554,6 @@
             spinner.classList.remove("show");
             button.disabled = false;
           }
-        });
-
-      // Smooth scrolling for anchor links
-      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-        anchor.addEventListener("click", function (e) {
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute("href"));
-          if (target) {
-            target.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }
-        });
-      });
-
-      // Back to top functionality
-      window.addEventListener("scroll", function () {
-        const backToTop = document.querySelector(".back-to-top");
-        if (window.pageYOffset > 300) {
-          backToTop.style.display = "block";
-        } else {
-          backToTop.style.display = "none";
-        }
-      });
-
-      document
-        .querySelector(".back-to-top")
-        .addEventListener("click", function (e) {
-          e.preventDefault();
-          window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-          });
         });
     </script>
   </body>
